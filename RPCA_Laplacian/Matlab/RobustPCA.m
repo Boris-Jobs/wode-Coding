@@ -1,20 +1,20 @@
-function [L, S] = RobustPCA(X, lambda, mu, tol, max_iter)%5¸ö²ÎÊı
-    % - X ÊÇ½«Òª±»·Ö½âµÄN¡ÁMµÄÊı¾İ¾ØÕó
+function [L, S] = RobustPCA(X, lambda, mu, tol, max_iter)%5ä¸ªå‚æ•°
+    % - X æ˜¯å°†è¦è¢«åˆ†è§£çš„NÃ—Mçš„æ•°æ®çŸ©é˜µ
     %   X can also contain NaN's for unobserved values
     % - lambda - regularization parameter, default = 1/sqrt(max(N,M))
     % - mu - the augmented lagrangian parameter, default = 10*lambda
     % - tol - reconstruction error tolerance, default = 1e-6
     % - max_iter - maximum number of iterations, default = 1000
-    %X=L+S, lambda, Y, mu, ¦Ñ=1.5
+    %X=L+S, lambda, Y, mu, Ï=1.5
 
     [M, N] = size(X);
-    unobserved = isnan(X);%·µ»ØÒ»¸öÓëAÏàÍ¬Î¬ÊıµÄÊı×é
-    %ÈôAµÄÔªËØÎªNaN£¨·ÇÊıÖµ£©£¬ÔÚ¶ÔÓ¦Î»ÖÃÉÏ·µ»ØÂß¼­1£¨Õæ£©£¬·ñÔò·µ»ØÂß¼­0£¨¼Ù£©
+    unobserved = isnan(X);%è¿”å›ä¸€ä¸ªä¸Aç›¸åŒç»´æ•°çš„æ•°ç»„
+    %è‹¥Açš„å…ƒç´ ä¸ºNaNï¼ˆéæ•°å€¼ï¼‰ï¼Œåœ¨å¯¹åº”ä½ç½®ä¸Šè¿”å›é€»è¾‘1ï¼ˆçœŸï¼‰ï¼Œå¦åˆ™è¿”å›é€»è¾‘0ï¼ˆå‡ï¼‰
     X(unobserved) = 0;
-    normX = norm(X, 'fro');%·µ»Ø¾ØÕó X µÄ Frobenius ·¶Êı
+    normX = norm(X, 'fro');%è¿”å›çŸ©é˜µ X çš„ Frobenius èŒƒæ•°
 
-    % default arguments£¬narginÎªÊä³ö²ÎÊıµÄ¸öÊı£¬Ò»¹²5¸ö²ÎÊı
-    %ÏÂÁĞµÄifÓëendÕâÒ»¶ÎÊÇÔÚÉè¶¨Ä¬ÈÏÖµ
+    % default argumentsï¼Œnarginä¸ºè¾“å‡ºå‚æ•°çš„ä¸ªæ•°ï¼Œä¸€å…±5ä¸ªå‚æ•°
+    %ä¸‹åˆ—çš„ifä¸endè¿™ä¸€æ®µæ˜¯åœ¨è®¾å®šé»˜è®¤å€¼
     if nargin < 2
         lambda = 1 / sqrt(max(M,N));
     end
@@ -31,7 +31,7 @@ function [L, S] = RobustPCA(X, lambda, mu, tol, max_iter)%5¸ö²ÎÊı
     % initial solution
     L = zeros(M, N);
     S = zeros(M, N);
-    Y = zeros(M, N);%Ïàµ±ÓÚRPCAµÄ¦Ë
+    Y = zeros(M, N);%ç›¸å½“äºRPCAçš„Î»
     
     for iter = (1:max_iter)
         % ADMM step: update L and S
@@ -39,15 +39,15 @@ function [L, S] = RobustPCA(X, lambda, mu, tol, max_iter)%5¸ö²ÎÊı
         S = So(lambda/mu, X - L + (1/mu)*Y);
         % and augmented lagrangian multiplier
         Z = X - L - S;
-        Z(unobserved) = 0; % skip missing valuesÌø¹ı²»´æÔÚµÄÖµ
+        Z(unobserved) = 0; % skip missing valuesè·³è¿‡ä¸å­˜åœ¨çš„å€¼
         Y = Y + mu*Z;
-        mu=1*mu;%¡¾Ô­³ÌĞòÔö¼ÓÏî£¬¼ÓÁËÕâÏîÒÔºóËÙ¶È¼ÓÁË¸öÊıÁ¿¼¶£¬µ«sparse¾Í²»ÄÇÃ´Ã÷ÏÔ¡¿
-        err = norm(Z, 'fro') / normX;%ÓÃÎó²îÖµµÄ¶ş·¶ÊıÀ´ºâÁ¿·Ö½â³Ì¶ÈµÄ
+        mu=1*mu;%ã€åŸç¨‹åºå¢åŠ é¡¹ï¼ŒåŠ äº†è¿™é¡¹ä»¥åé€Ÿåº¦åŠ äº†ä¸ªæ•°é‡çº§ï¼Œä½†sparseå°±ä¸é‚£ä¹ˆæ˜æ˜¾ã€‘
+        err = norm(Z, 'fro') / normX;%ç”¨è¯¯å·®å€¼çš„äºŒèŒƒæ•°æ¥è¡¡é‡åˆ†è§£ç¨‹åº¦çš„
         if (iter == 1) || (mod(iter, 10) == 0) || (err < tol)
             fprintf(1, 'iter: %04d\terr: %f\trank(L): %d\tcard(S): %d\n', ...
                     iter, err, rank(L), nnz(S(~unobserved)));
                 %Number of nonzero matrix elements
-        end%µÚÒ»´Î||Ã¿10´Î||Îó²îÂú×ãÊ±£¬fprintfÒ»´Î
+        end%ç¬¬ä¸€æ¬¡||æ¯10æ¬¡||è¯¯å·®æ»¡è¶³æ—¶ï¼Œfprintfä¸€æ¬¡
         
         if (err < tol)
             break; 
@@ -58,8 +58,8 @@ end
 
 function r = So(tau, X)
     % shrinkage operator
-    r = sign(X) .* max(abs(X) - tau, 0);%·µ»ØXµÄãĞÖµº¯ÊıÈ¡Öµ
-    %Sµ¥±äÁ¿Ê±¾ÍÊÇÈ¡Õâ¸ö
+    r = sign(X) .* max(abs(X) - tau, 0);%è¿”å›Xçš„é˜ˆå€¼å‡½æ•°å–å€¼
+    %Så•å˜é‡æ—¶å°±æ˜¯å–è¿™ä¸ª
 end
 
 function r = Do(tau, X)
@@ -67,5 +67,5 @@ function r = Do(tau, X)
     [U, S, V] = svd(X, 'econ');%economy size,
     %For m < n, only the first m columns of V arecomputed and S is m-by-m.
     r = U*So(tau, S)*V';
-    %Lµ¥±äÁ¿Ê±¾ÍÊÇÈ¡Õâ¸ö
+    %Lå•å˜é‡æ—¶å°±æ˜¯å–è¿™ä¸ª
 end

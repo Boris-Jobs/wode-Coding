@@ -5,3 +5,4 @@ hi
         <p>This browser does not support PDFs. Please download the PDF to view it: <a href="20230108_单摆的周期问题.pdf">Download PDF</a>.</p>
     </embed>
 </object>
+![contents](./20230108_单摆的周期问题.pdf)
